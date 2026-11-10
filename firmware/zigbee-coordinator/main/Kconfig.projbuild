@@ -1,0 +1,33 @@
+menu "Zigbee coordinator"
+
+    config ZB_COORD_CHANNEL
+        int "Primary Zigbee channel"
+        range 11 26
+        default 25
+        help
+            Channel used to form the network. The S3's Wi-Fi sits right next to the H2: pick a Zigbee channel away
+            from your Wi-Fi channel (Wi-Fi 1 overlaps Zigbee 11-14, 6 overlaps 16-19, 11 overlaps 21-24).
+            15, 20 and 25 fall between them.
+
+    config ZB_COORD_SECONDARY_CHANNEL_MASK
+        hex "Secondary channel mask"
+        default 0x02108000
+        help
+            Channels tried if formation on the primary channel fails. Default: 15, 20 and 25.
+
+    config ZB_COORD_MAX_CHILDREN
+        int "Maximum number of direct children"
+        range 1 64
+        default 16
+        help
+            End devices (battery sensors) that join the coordinator directly. Devices joined through a router
+            do not count.
+
+    config ZB_COORD_OPEN_AFTER_FORMATION
+        bool "Keep the network open for 180 s after the first formation"
+        default n
+        help
+            The SDK examples open the network after formation. By default it is closed again; joining is opened
+            on request from the S3 ("Permit join" button).
+
+endmenu

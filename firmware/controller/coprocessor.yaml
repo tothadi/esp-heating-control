@@ -1,0 +1,145 @@
+# Optional package: room and outdoor temperatures from Zigbee sensors through the ESP32-H2 co-processor.
+#
+# Needs the Zigbee coordinator firmware (../zigbee-coordinator) on the H2, flashed through its own USB-C ("RADIO").
+# It pairs standard ZCL temperature / humidity sensors and thermostats and sends their values over the UART
+# (protocol: docs/coprocessor-protocol.md).
+#
+# Use: uncomment "coprocessor: !include coprocessor.yaml" under packages: in heating-controller.yaml, then:
+#   1. Press "Co-processor permit join" (Home Assistant or the web UI) and pair the sensors (see the H2 README).
+#   2. Read their ids from the "Co-processor devices" text sensor or the log ("Device 00124b... name ... model ...",
+#      "Unmapped reading: device ...").
+#   3. Put the ids into the cp_*_device substitutions below (or override them in heating-controller.yaml's
+#      substitutions), and flash again.
+#
+# A mapped sensor takes precedence over the Home Assistant sensor of the same zone (and over the Home Assistant
+# outdoor sensor). If it sends nothing for cp_timeout, it becomes unknown and the Home Assistant / fallback values
+# apply again. Without this package nothing changes.
+#
+# Status: written and validated with "esphome config"; the link has not run on hardware yet.
+
+substitutions:
+  # Device ids (16 hex digits, e.g. "00124b0012345678"); empty = not mapped.
+  cp_zone1_device: ""
+  cp_zone2_device: ""
+  cp_zone3_device: ""
+  cp_zone4_device: ""
+  cp_zone5_device: ""
+  cp_zone6_device: ""
+  cp_zone7_device: ""
+  cp_zone8_device: ""
+  cp_outdoor_device: ""
+  # A sensor that has not reported for this long is dropped. Battery Zigbee sensors usually report at least every
+  # 10-60 minutes even when the temperature is steady.
+  cp_timeout: 2h
+
+external_components:
+  - source:
+      type: local
+      path: components
+    components: [h2_coprocessor]
+
+# S3 IO10 -> H2 RXD0 (GPIO23), S3 IO11 <- H2 TXD0 (GPIO24). The H2's ROM also prints its boot messages on this UART;
+# the component ignores everything that is not a checksummed "$CP," line.
+uart:
+  - id: cp_uart
+    tx_pin: GPIO10
+    rx_pin: GPIO11
+    baud_rate: 115200
+    rx_buffer_size: 1024
+
+h2_coprocessor:
+  id: cp
+  uart_id: cp_uart
+  # S3 IO12 -> H2 EN: pulsed low by the "Co-processor reset" button, an input otherwise.
+  # S3 IO13 (H2 BOOT, GPIO9) stays unconfigured: the H2 is flashed through its own USB-C "RADIO".
+  # The four coexistence (PTA) lines IO14/IO21/IO47/IO48 are only used by the Thread/Matter firmware; unconfigured.
+  reset_pin: GPIO12
+  permit_join_duration: 180s
+
+button:
+  - platform: h2_coprocessor
+    permit_join:
+      name: "Co-processor permit join"
+    stop_join:
+      name: "Co-processor stop join"
+    reset:
+      name: "Co-processor reset"
+    refresh:
+      name: "Co-processor refresh"
+
+text_sensor:
+  - platform: h2_coprocessor
+    device_list:
+      name: "Co-processor devices"
+    firmware:
+      name: "Co-processor firmware"
+    network:
+      name: "Co-processor network"
+
+# One sensor per zone and one for the outdoor temperature. Internal: the zones already expose "<zone> room
+# temperature". type "temperature" accepts Temperature Measurement (0x0402) and a thermostat's LocalTemperature
+# (0x0201/0x0000). Add more sensors (type humidity, setpoint, heating_demand, local_temperature) as you like.
+sensor:
+  - platform: h2_coprocessor
+    id: cp_zone1_temp
+    internal: true
+    device: "${cp_zone1_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[0] = x;"
+  - platform: h2_coprocessor
+    id: cp_zone2_temp
+    internal: true
+    device: "${cp_zone2_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[1] = x;"
+  - platform: h2_coprocessor
+    id: cp_zone3_temp
+    internal: true
+    device: "${cp_zone3_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[2] = x;"
+  - platform: h2_coprocessor
+    id: cp_zone4_temp
+    internal: true
+    device: "${cp_zone4_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[3] = x;"
+  - platform: h2_coprocessor
+    id: cp_zone5_temp
+    internal: true
+    device: "${cp_zone5_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[4] = x;"
+  - platform: h2_coprocessor
+    id: cp_zone6_temp
+    internal: true
+    device: "${cp_zone6_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[5] = x;"
+  - platform: h2_coprocessor
+    id: cp_zone7_temp
+    internal: true
+    device: "${cp_zone7_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[6] = x;"
+  - platform: h2_coprocessor
+    id: cp_zone8_temp
+    internal: true
+    device: "${cp_zone8_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_room)[7] = x;"
+  - platform: h2_coprocessor
+    id: cp_outdoor_temp
+    internal: true
+    device: "${cp_outdoor_device}"
+    timeout: ${cp_timeout}
+    on_value:
+      - lambda: "id(cp_outdoor) = x;"

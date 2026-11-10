@@ -1,0 +1,66 @@
+# Network package (default): Ethernet AND Wi-Fi, Ethernet preferred.
+#
+# ESPHome 2026.9 can run ethernet: and wifi: together when both are listed under network: priority:. Both
+# interfaces come up; the network component pins the default route to the first CONNECTED interface in the list,
+# so with the cable plugged in (link up, address assigned) everything uses Ethernet, and when the link drops it
+# falls back to Wi-Fi within about a second (and back again when the cable returns).
+# Older ESPHome versions reject the combination ("Component ethernet cannot be used together with component wifi");
+# use network_ethernet.yaml or network_wifi.yaml there.
+#
+# The "Wi-Fi" switch turns the Wi-Fi station off at run time for a wired-only setup (restored after a reboot);
+# for Wi-Fi only, unplug the cable or build with network_wifi.yaml.
+#
+# W5500 on SPI through the FFC: SCK IO39, MOSI IO40, MISO IO41, CS IO42 (4.7 kOhm pull-up), INT IO38 (4.7 kOhm
+# pull-up); no reset line (RC power-on reset). IO39-IO42 are the S3's JTAG pins; JTAG is not used.
+
+network:
+  priority:
+    - ethernet
+    - wifi
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO39
+  mosi_pin: GPIO40
+  miso_pin: GPIO41
+  cs_pin: GPIO42
+  interrupt_pin: GPIO38
+  clock_speed: 20MHz
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Never reboot because Wi-Fi is away (a reboot would briefly close every zone).
+  reboot_timeout: 0s
+  ap:
+    ssid: "Heating Controller Setup"
+    password: !secret ap_password
+
+captive_portal:
+improv_serial:
+
+switch:
+  - platform: template
+    id: wifi_enabled
+    name: "Wi-Fi"
+    icon: mdi:wifi
+    entity_category: config
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    on_turn_on:
+      - wifi.enable:
+    on_turn_off:
+      - wifi.disable:
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi signal"
+    update_interval: 60s
+
+text_sensor:
+  - platform: ethernet_info
+    ip_address:
+      name: "Ethernet IP address"
+  - platform: wifi_info
+    ip_address:
+      name: "WiFi IP address"

@@ -1,12 +1,49 @@
 # Firmware
 
-## [`v4/`](v4/README.md): the controller firmware
+The logic board has two chips: the **ESP32-S3** (USB-C "MAIN") runs the heating control, the **ESP32-H2** (USB-C
+"RADIO") is the 802.15.4 radio. There are two ways to run them:
 
-ESPHome configuration of the v4 controller. All heating control runs on the device; Home Assistant is only dashboard and remote control. See [v4/README.md](v4/README.md) and [docs/firmware.md](../docs/firmware.md).
+| Mode | ESP32-S3 | ESP32-H2 | Room / outdoor sensors | User interface | Network |
+|---|---|---|---|---|---|
+| **Zigbee mode** (supported path) | [`controller/`](controller/README.md) (ESPHome) | [`zigbee-coordinator/`](zigbee-coordinator/README.md) | Zigbee (optional `coprocessor.yaml`) or Home Assistant | Home Assistant (API), built-in web UI | Ethernet + Wi-Fi, Ethernet preferred while plugged in (ESPHome ≥ 2026.9); single-interface builds optional |
+| **Thread/Matter mode** | [`thread-matter/`](thread-matter/README.md) (ESP-IDF + esp-matter) | [`h2-rcp/`](h2-rcp/README.md) (OpenThread RCP, flashed automatically by the S3) | Matter over Thread or Wi-Fi, or MQTT | MQTT (Home Assistant optional), USB console | Ethernet and Wi-Fi, chosen at run time (Ethernet preferred) |
+
+Both modes contain the same heating control (zones, floor protection, OpenTherm boiler control with weather
+compensation, schedules, pumps, display) and work without Home Assistant and without any network. Nothing of it has
+run on hardware yet.
+
+To switch modes, flash both chips: Zigbee mode = ESPHome on the S3 + `zigbee-coordinator` on the H2 (through
+"RADIO"); Thread/Matter mode = `thread-matter` on the S3 (it carries the RCP image and writes it into the H2 by
+itself; flashing `h2-rcp` through "RADIO" first also works). Settings are not shared between the two.
+
+## [`controller/`](controller/README.md): ESPHome firmware (Zigbee mode)
+
+ESPHome configuration of the controller. All heating control runs on the device; Home Assistant is only dashboard and
+remote control. Network packages: Ethernet + Wi-Fi with Ethernet preferred (default), Ethernet only, Wi-Fi only. See [controller/README.md](controller/README.md) and
+[docs/firmware.md](../docs/firmware.md).
+
+## [`zigbee-coordinator/`](zigbee-coordinator/README.md): ESP32-H2 Zigbee coordinator (Zigbee mode)
+
+ESP-IDF firmware (Espressif Zigbee SDK 2.x) for the H2, flashed through its own USB-C ("RADIO"): a Zigbee coordinator
+that pairs standard Zigbee temperature/humidity sensors and thermostats, binds and configures their reports and
+forwards the values to the S3 over the UART ([docs/coprocessor-protocol.md](../docs/coprocessor-protocol.md)). On the
+S3, include [`controller/coprocessor.yaml`](controller/coprocessor.yaml). Compiles with ESP-IDF v5.5.6.
+
+## [`thread-matter/`](thread-matter/README.md): ESP-IDF firmware (Thread/Matter mode)
+
+Custom ESP-IDF firmware for the S3: the heating control ported from the ESPHome configuration, a Thread border router
+(OpenThread BR with the H2 as radio co-processor, Wi-Fi or Ethernet backbone), a Matter controller that commissions
+Matter temperature sensors and thermostats and maps them to zones, and an MQTT interface. ESP-IDF v5.5.5,
+esp-matter release/v1.6.
+
+## [`h2-rcp/`](h2-rcp/README.md): ESP32-H2 OpenThread RCP (Thread/Matter mode)
+
+The ESP-IDF `ot_rcp` example configured for this board (UART0 on GPIO23/GPIO24 at 460800 baud, logs on "RADIO").
+Built before `thread-matter`, which embeds it.
 
 ## `reference/opentherm_gateway.yaml`: the predecessor
 
-ESPHome configuration of the predecessor ESP32 OpenTherm gateway, kept as a reference: the NTC measurement chain and the OpenTherm setup of v4 come from here. In that installation the zone control ran as Home Assistant automations and the zone relays were Zigbee devices; those automations are not part of this repository (v4 runs the same logic locally).
+ESPHome configuration of the predecessor ESP32 OpenTherm gateway, kept as a reference: the NTC measurement chain and the OpenTherm setup of the controller come from here. In that installation the zone control ran as Home Assistant automations and the zone relays were Zigbee devices; those automations are not part of this repository (the controller runs the same logic locally).
 
 ### Hardware
 

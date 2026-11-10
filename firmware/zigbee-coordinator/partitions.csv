@@ -1,0 +1,5 @@
+# Name,   Type, SubType, Offset,  Size, Flags
+# nvs holds the Zigbee stack data (esp-zigbee-lib 2.x) and the co-processor device table (namespace "cp").
+nvs,        data, nvs,      0x9000,  0x10000,
+phy_init,   data, phy,      ,        0x1000,
+factory,    app,  factory,  0x20000, 0x180000,

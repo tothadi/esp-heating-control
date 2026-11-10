@@ -1,0 +1,18 @@
+# Optional overlay: Wi-Fi / 802.15.4 external coexistence (PTA), H2 = follower.
+#   idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.coex" build
+# Only together with a thread-matter build that has PTA enabled (sdkconfig.pta, which disables BLE: on the ESP32-S3
+# the external-coexistence leader cannot be combined with the Bluetooth controller in ESP-IDF v5.5). With the PTA
+# lines unused by the S3, a follower would wait for a GRANT that never comes, so the default RCP image has PTA off.
+#
+# Line          S3 (leader)   H2 (follower)   direction
+# REQUEST       IO14          GPIO2           H2 -> S3   (802.15.4 wants the air)
+# PRIORITY      IO21          GPIO3           H2 -> S3   (request is high priority)
+# GRANT         IO47          GPIO4           S3 -> H2   (802.15.4 may transmit)
+# TX_LINE       IO48          GPIO5           S3 -> H2   (Wi-Fi is transmitting)
+CONFIG_ESP_COEX_EXTERNAL_COEXIST_ENABLE=y
+CONFIG_EXTERNAL_COEX_WORK_MODE_FOLLOWER=y
+CONFIG_EXTERNAL_COEX_WIRE_TYPE=3
+CONFIG_EXTERNAL_COEX_REQUEST_PIN=2
+CONFIG_EXTERNAL_COEX_PRIORITY_PIN=3
+CONFIG_EXTERNAL_COEX_GRANT_PIN=4
+CONFIG_EXTERNAL_COEX_TX_LINE_PIN=5

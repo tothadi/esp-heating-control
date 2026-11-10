@@ -1,0 +1,17 @@
+# Optional overlay: Wi-Fi / 802.15.4 external coexistence (PTA) with the S3 as leader.
+#   idf.py -D SDKCONFIG_DEFAULTS="sdkconfig.defaults;sdkconfig.pta" build
+# ESP-IDF v5.5 allows the external-coexistence leader on the ESP32-S3 only without the Bluetooth controller
+# (esp_coex Kconfig: ESP_COEX_EXTERNAL_COEXIST_ENABLE depends on !BT_CONTROLLER_ENABLED || SOC_EXTERNAL_COEX_ADVANCE,
+# and the S3 lacks SOC_EXTERNAL_COEX_ADVANCE). This variant therefore has NO BLE commissioning: devices can only be
+# added "on network" (already on Wi-Fi/Ethernet/this Thread network, e.g. via an open commissioning window). The H2
+# needs the matching RCP image (../h2-rcp with sdkconfig.coex; set HC_RCP_BUILD_DIR to that build).
+#
+# Line      S3 (leader)  H2 (follower)
+# REQUEST   IO14         GPIO2    H2 -> S3
+# PRIORITY  IO21         GPIO3    H2 -> S3
+# GRANT     IO47         GPIO4    S3 -> H2
+# TX_LINE   IO48         GPIO5    S3 -> H2
+CONFIG_BT_ENABLED=n
+CONFIG_ENABLE_ESP32_BLE_CONTROLLER=n
+CONFIG_ESP_COEX_EXTERNAL_COEXIST_ENABLE=y
+CONFIG_ESP_COEX_SW_COEXIST_ENABLE=n

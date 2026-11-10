@@ -1,0 +1,476 @@
+{
+ "poles": [
+  {
+   "x": 121.3,
+   "side": "top",
+   "label": "7"
+  },
+  {
+   "x": 124.8,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 128.3,
+   "side": "top",
+   "label": "8"
+  },
+  {
+   "x": 131.8,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 89.82,
+   "side": "top",
+   "label": "3"
+  },
+  {
+   "x": 93.32,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 96.82,
+   "side": "top",
+   "label": "4"
+  },
+  {
+   "x": 100.32,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 11.12,
+   "side": "top",
+   "label": "1"
+  },
+  {
+   "x": 14.62,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 18.12,
+   "side": "top",
+   "label": "2"
+  },
+  {
+   "x": 21.62,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 26.86,
+   "side": "top",
+   "label": "3"
+  },
+  {
+   "x": 30.36,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 33.86,
+   "side": "top",
+   "label": "4"
+  },
+  {
+   "x": 37.36,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 137.04,
+   "side": "top",
+   "label": "A"
+  },
+  {
+   "x": 140.54,
+   "side": "top",
+   "label": "B"
+  },
+  {
+   "x": 10.7,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 15.78,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 20.86,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 25.94,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 31.02,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 36.1,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 41.18,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 46.26,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 42.6,
+   "side": "top",
+   "label": "5"
+  },
+  {
+   "x": 46.1,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 49.6,
+   "side": "top",
+   "label": "6"
+  },
+  {
+   "x": 53.1,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 58.34,
+   "side": "top",
+   "label": "7"
+  },
+  {
+   "x": 61.84,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 65.34,
+   "side": "top",
+   "label": "8"
+  },
+  {
+   "x": 68.84,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 74.08,
+   "side": "top",
+   "label": "1"
+  },
+  {
+   "x": 77.58,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 81.08,
+   "side": "top",
+   "label": "2"
+  },
+  {
+   "x": 84.58,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 53.16,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 58.24,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 63.32,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 68.4,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 73.48,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 78.56,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 83.64,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 88.72,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 147.46,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 152.54,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 95.62,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 100.7,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 105.78,
+   "side": "bottom",
+   "label": "L"
+  },
+  {
+   "x": 110.86,
+   "side": "bottom",
+   "label": "N"
+  },
+  {
+   "x": 105.56,
+   "side": "top",
+   "label": "5"
+  },
+  {
+   "x": 109.06,
+   "side": "top",
+   "label": "G"
+  },
+  {
+   "x": 112.56,
+   "side": "top",
+   "label": "6"
+  },
+  {
+   "x": 116.06,
+   "side": "top",
+   "label": "G"
+  }
+ ],
+ "groups": [
+  {
+   "x": 126.55,
+   "side": "top",
+   "label": "TERM 7-8"
+  },
+  {
+   "x": 95.07,
+   "side": "top",
+   "label": "TERM 3-4"
+  },
+  {
+   "x": 16.37,
+   "side": "top",
+   "label": "NTC 1-2"
+  },
+  {
+   "x": 32.11,
+   "side": "top",
+   "label": "NTC 3-4"
+  },
+  {
+   "x": 138.79,
+   "side": "top",
+   "label": "OT"
+  },
+  {
+   "x": 13.24,
+   "side": "bottom",
+   "label": "Z1"
+  },
+  {
+   "x": 23.4,
+   "side": "bottom",
+   "label": "Z2"
+  },
+  {
+   "x": 33.56,
+   "side": "bottom",
+   "label": "Z3"
+  },
+  {
+   "x": 43.72,
+   "side": "bottom",
+   "label": "Z4"
+  },
+  {
+   "x": 47.85,
+   "side": "top",
+   "label": "NTC 5-6"
+  },
+  {
+   "x": 63.59,
+   "side": "top",
+   "label": "NTC 7-8"
+  },
+  {
+   "x": 79.33,
+   "side": "top",
+   "label": "TERM 1-2"
+  },
+  {
+   "x": 55.7,
+   "side": "bottom",
+   "label": "Z5"
+  },
+  {
+   "x": 65.86,
+   "side": "bottom",
+   "label": "Z6"
+  },
+  {
+   "x": 76.02,
+   "side": "bottom",
+   "label": "Z7"
+  },
+  {
+   "x": 86.18,
+   "side": "bottom",
+   "label": "Z8"
+  },
+  {
+   "x": 150.0,
+   "side": "bottom",
+   "label": "230V"
+  },
+  {
+   "x": 98.16,
+   "side": "bottom",
+   "label": "P1"
+  },
+  {
+   "x": 108.32,
+   "side": "bottom",
+   "label": "P2"
+  },
+  {
+   "x": 110.81,
+   "side": "top",
+   "label": "TERM 5-6"
+  }
+ ],
+ "row_y": {
+  "top": 3.6,
+  "bottom": 79.4
+ },
+ "blocks": [
+  {
+   "ref": "J8",
+   "side": "top",
+   "x0": 121.3,
+   "x1": 131.8
+  },
+  {
+   "ref": "J6",
+   "side": "top",
+   "x0": 89.82,
+   "x1": 100.32
+  },
+  {
+   "ref": "J1",
+   "side": "top",
+   "x0": 11.12,
+   "x1": 21.62
+  },
+  {
+   "ref": "J2",
+   "side": "top",
+   "x0": 26.86,
+   "x1": 37.36
+  },
+  {
+   "ref": "J9",
+   "side": "top",
+   "x0": 137.04,
+   "x1": 140.54
+  },
+  {
+   "ref": "J21",
+   "side": "bottom",
+   "x0": 10.7,
+   "x1": 46.26
+  },
+  {
+   "ref": "J3",
+   "side": "top",
+   "x0": 42.6,
+   "x1": 53.1
+  },
+  {
+   "ref": "J4",
+   "side": "top",
+   "x0": 58.34,
+   "x1": 68.84
+  },
+  {
+   "ref": "J5",
+   "side": "top",
+   "x0": 74.08,
+   "x1": 84.58
+  },
+  {
+   "ref": "J22",
+   "side": "bottom",
+   "x0": 53.16,
+   "x1": 88.72
+  },
+  {
+   "ref": "J24",
+   "side": "bottom",
+   "x0": 147.46,
+   "x1": 152.54
+  },
+  {
+   "ref": "J23",
+   "side": "bottom",
+   "x0": 95.62,
+   "x1": 110.86
+  },
+  {
+   "ref": "J7",
+   "side": "top",
+   "x0": 105.56,
+   "x1": 116.06
+  }
+ ],
+ "rj45": {
+  "x": 152.4,
+  "w": 16.0,
+  "h": 13.3,
+  "label": "LAN"
+ }
+}

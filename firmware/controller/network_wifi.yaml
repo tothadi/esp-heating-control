@@ -1,0 +1,24 @@
+# Network package: Wi-Fi only (2.4 GHz, 802.11b/g/n). Alternative to network_dual.yaml (default) and
+# network_ethernet.yaml, see there.
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Never reboot because Wi-Fi is away (a reboot would briefly close every zone).
+  reboot_timeout: 0s
+  ap:
+    ssid: "Heating Controller Setup"
+    password: !secret ap_password
+
+captive_portal:
+improv_serial:
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi signal"
+    update_interval: 60s
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP address"

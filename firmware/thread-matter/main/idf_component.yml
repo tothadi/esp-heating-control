@@ -1,0 +1,7 @@
+## IDF Component Manager Manifest File (exact versions are recorded in dependencies.lock at build time)
+dependencies:
+  # RCP update component of esp-thread-br v1.3, pinned exactly (esp-matter's controller example uses ~1.6.0)
+  espressif/esp_rcp_update: "==1.6.1"
+  espressif/cjson: "^1.7.19"
+  idf:
+    version: "==5.5.5"

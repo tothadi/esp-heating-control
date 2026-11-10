@@ -1,0 +1,7 @@
+# ESP-IDF build output
+/build/
+/build-*/
+/managed_components/
+/sdkconfig
+/sdkconfig.old
+# dependencies.lock is kept: it pins the exact managed-component versions

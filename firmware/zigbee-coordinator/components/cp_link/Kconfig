@@ -1,0 +1,26 @@
+menu "Co-processor link (UART to the ESP32-S3)"
+
+    config CP_LINK_TX_GPIO
+        int "UART0 TX GPIO (to S3 IO11)"
+        default 24
+        help
+            ESP32-H2 TXD0. Fixed by the logic board.
+
+    config CP_LINK_RX_GPIO
+        int "UART0 RX GPIO (from S3 IO10)"
+        default 23
+        help
+            ESP32-H2 RXD0. Fixed by the logic board.
+
+    config CP_LINK_BAUD_RATE
+        int "Baud rate"
+        default 115200
+        help
+            Must match the uart: block of firmware/controller/coprocessor.yaml.
+
+    config CP_MAX_DEVICES
+        int "Maximum number of devices in the table"
+        range 4 64
+        default 32
+
+endmenu

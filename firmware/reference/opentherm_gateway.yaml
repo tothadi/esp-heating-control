@@ -1,7 +1,7 @@
 # ESPHome reference configuration: OpenTherm gateway for an underfloor heating system.
 # Hardware: ESP32 D1 Mini (wemos_d1_mini32) + DIYLess OpenTherm Master Shield (boiler side)
 #           + 2x ADS1115 (16-bit ADC) reading up to 8 floor NTC probes + DS18B20 cabinet sensor.
-# This is the reference for the v4 firmware (see ../../hardware).
+# This is the reference for the controller firmware (see ../../hardware).
 #
 # Build / flash:  esphome run firmware/reference/opentherm_gateway.yaml
 # Secrets (secrets.yaml next to this file, never commit it):

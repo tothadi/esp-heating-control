@@ -12,3 +12,4 @@ fp-info-cache
 # ESPHome
 secrets.yaml
 .esphome/
+CLAUDE.local.md

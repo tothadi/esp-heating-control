@@ -1,0 +1,7 @@
+## IDF Component Manager Manifest File
+dependencies:
+  idf:
+    version: ">=5.5.6,<6.0"
+  # Espressif Zigbee SDK 2.x (its own stack, replaces esp-zboss-lib of SDK 1.x)
+  espressif/esp-zigbee-lib:
+    version: "~2.1.0"

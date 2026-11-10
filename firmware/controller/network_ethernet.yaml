@@ -1,0 +1,24 @@
+# Network package: wired Ethernet only, through the WIZnet W5500 on the power/IO board.
+#
+# The default is network_dual.yaml (Ethernet + Wi-Fi, Ethernet preferred, needs ESPHome >= 2026.9). This package is
+# for an Ethernet-only build (no Wi-Fi radio use, no fallback access point) or for ESPHome versions before 2026.9,
+# which refuse ethernet: and wifi: in the same firmware; there the choice between this file and network_wifi.yaml is
+# made at compile time (flash again to switch: over USB-C "MAIN", or OTA).
+#
+# W5500 on SPI through the FFC: SCK IO39, MOSI IO40, MISO IO41, CS IO42 (4.7 kΩ pull-up), INT IO38 (4.7 kΩ
+# pull-up). No reset line: the W5500 has an RC power-on reset. IO39-IO42 are the S3's JTAG pins; JTAG is not used
+# (debugging goes through the built-in USB-Serial/JTAG).
+
+ethernet:
+  type: W5500
+  clk_pin: GPIO39
+  mosi_pin: GPIO40
+  miso_pin: GPIO41
+  cs_pin: GPIO42
+  interrupt_pin: GPIO38
+  clock_speed: 20MHz
+
+text_sensor:
+  - platform: ethernet_info
+    ip_address:
+      name: "IP address"

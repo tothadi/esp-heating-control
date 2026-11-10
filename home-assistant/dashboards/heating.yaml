@@ -1,4 +1,4 @@
-# Home Assistant dashboard for the ESP Heating Control v4 controller (storage-mode dashboard).
+# Home Assistant dashboard for the ESP Heating Control controller (storage-mode dashboard).
 # Install: Settings -> Dashboards -> Add dashboard -> open it -> pencil -> three-dot menu -> Raw configuration
 #          editor -> paste this file.
 # Every entity here belongs to the controller (ESPHome device "heating-controller"); the controller runs all the

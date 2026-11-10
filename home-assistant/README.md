@@ -1,6 +1,6 @@
 # Home Assistant
 
-The v4 controller runs the whole heating control on its own ([firmware](../firmware/v4/README.md)). Home Assistant
+The controller runs the whole heating control on its own ([firmware](../firmware/controller/README.md)). Home Assistant
 is only a **dashboard and remote control**: it shows the controller's entities and changes its setpoints, schedule
 and settings. There are no control automations in Home Assistant; if it is down, the heating keeps working.
 
