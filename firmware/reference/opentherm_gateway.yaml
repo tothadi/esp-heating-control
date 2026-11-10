@@ -1,0 +1,588 @@
+# ESPHome reference configuration: OpenTherm gateway for an underfloor heating system.
+# Hardware: ESP32 D1 Mini (wemos_d1_mini32) + DIYLess OpenTherm Master Shield (boiler side)
+#           + 2x ADS1115 (16-bit ADC) reading up to 8 floor NTC probes + DS18B20 cabinet sensor.
+# This is the reference for the v4 firmware (see ../../hardware).
+#
+# Build / flash:  esphome run firmware/reference/opentherm_gateway.yaml
+# Secrets (secrets.yaml next to this file, never commit it):
+#   wifi_ssid, wifi_password, api_encryption_key (32-byte base64; also used for OTA), ap_password
+#
+# The device name "opentherm" defines the Home Assistant entity IDs used by the packages:
+#   number.opentherm_boiler_flow_setpoint            writable flow setpoint (t_set)
+#   switch.opentherm_ch_enable                       CH (space heating) demand to the boiler
+#   sensor.opentherm_floor_temperature_<zone>        floor NTC probes (living_room, hallway, bedroom, kids_room_1,
+#                                                    kids_room_2, bathroom, attic_1, attic_2)
+#   binary_sensor.opentherm_floor_overheat_lockout   local floor protection active
+
+substitutions:
+  # Master Shield on a D1 Mini footprint: D2 (in) / D1 (out). On an ESP8266 WeMos D1 Mini: GPIO4 / GPIO5.
+  # Verify against the shield's silkscreen / the DIYLess example code before flashing!
+  ot_in_pin: GPIO21
+  ot_out_pin: GPIO22
+  # Safe flow temperature when HA has been unreachable for 10 minutes (gentle on the floor).
+  failsafe_flow_temp: "30"
+  # I2C for the ADS1115s: D1 Mini D3 / D4 (D1/D2 are taken by OpenTherm).
+  i2c_sda_pin: GPIO17
+  i2c_scl_pin: GPIO16
+  # NTC divider supply voltage AS SEEN BY EACH ADS1115: the raw voltage of an unconnected NTC input
+  # (floor_v_*, open circuit = the 3V3 rail measured by the ADS itself). Not the multimeter value: the divider
+  # maths is only accurate ratiometrically (same meter), so one value per ADS. MEASURE AND ADAPT for your board.
+  ntc_supply_voltage_a: 3.244V
+  ntc_supply_voltage_b: 3.286V
+  # Fixed divider resistor (nominal value; anything around 5-15 kOhm works with gain 4.096). Use 0.1 % parts.
+  ntc_ref_resistor: 10kOhm
+  # Open / short thresholds on the raw ADS voltage (unconnected input ~3.3 V, short ~0 V).
+  ntc_open_v: "3.2"
+  ntc_short_v: "0.05"
+  # Local floor protection: ONLY while HA is unreachable, 2 °C above the HA cut-off limits
+  # (a Home Assistant automation in that installation). Release 2 °C below the limit (on every probe).
+  # These are DEFAULTS - adapt them together with the HA limits.
+  floor_limit_laminate: "28.0"        # probe on the surface of / directly under laminate
+  floor_limit_tile: "30.0"            # probe directly under tiles (HA 28 + 2)
+  # Probe on top of the screed under laminate + underlay: reads 2-3 °C above the walking surface while heating.
+  floor_limit_under_laminate: "36.0"  # HA 34 + 2
+  # Kids' room 1 probe sits above a supply pipe and reads the pipe peak: HA 36 + 2.
+  floor_limit_kids_room_1: "38.0"
+
+esphome:
+  name: opentherm
+  friendly_name: OpenTherm
+
+esp32:
+  board: wemos_d1_mini32
+  # Default since ESPHome 2026.1, stated explicitly so it does not change with a version bump.
+  framework:
+    type: esp-idf
+
+logger:
+  logs:
+    # the NTC channels sample every second (8 lines/s) - keep the raw ADS values out of the log
+    ads1115.sensor: INFO
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+  # Do not reboot when HA is unreachable - the failsafe interval below takes care of the boiler.
+  reboot_timeout: 0s
+
+ota:
+  - platform: esphome
+    # Uses the API encryption key (ESPHome 2026.9+); no separate OTA password needed.
+    encryption: {}
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Optional static IP (faster reconnects, stable address for OTA):
+  # manual_ip:
+  #   static_ip: 192.168.1.50
+  #   gateway: 192.168.1.1
+  #   subnet: 255.255.255.0
+  #   dns1: 192.168.1.1
+  # Optional second network as a fallback: replace ssid/password above with a 'networks:' list
+  # (each entry with ssid, password, priority and its own manual_ip).
+  ap:
+    ssid: "OpenTherm Fallback"
+    password: !secret ap_password
+
+captive_portal:
+
+# --- OpenTherm hub ---------------------------------------------------------
+
+opentherm:
+  in_pin: ${ot_in_pin}
+  out_pin: ${ot_out_pin}
+  # Requests run in sync with the boiler (one message on the bus at a time).
+  sync_mode: true
+
+# --- Floor NTCs: 2x ADS1115 (16 bit) -----------------------------------------
+# Wiring per NTC: 3V3 -- ${ntc_ref_resistor} (0.1 %) -- [ADS input] -- NTC -- GND,
+# 100 nF between the ADS input and GND. The ADS1115 VDD is also fed from 3V3.
+#   ads_a (0x48, ADDR->GND): A3 bedroom, A2 kids' room 1, A1 kids' room 2, A0 bathroom
+#   ads_b (0x49, ADDR->VDD): A3 hallway, A2 living room, A1 attic 1, A0 attic 2 (spare channels)
+#   (the zone order follows the pin header A3, A2, A1, A0 so the wires do not cross)
+# An unconnected input reads 'unknown' in HA.
+# Noise filtering: probes run over old thermostat cables that pick up 50 Hz mains interference (one channel
+# jumped +-47 mV, about +-1.2 °C, unconnected inputs only +-2 mV). The ADS samples at 860 SPS, i.e. it takes a
+# snapshot of that interference, so each channel is sampled every second and the median of 60 samples is passed on
+# every minute - a sinusoidal disturbance with random phase drops out.
+
+i2c:
+  sda: ${i2c_sda_pin}
+  scl: ${i2c_scl_pin}
+  scan: true
+
+ads1115:
+  - address: 0x48
+    id: ads_a
+  - address: 0x49
+    id: ads_b
+
+# --- Writable values (controlled by HA) --------------------------------------
+
+number:
+  - platform: opentherm
+    t_set:
+      id: ot_t_set
+      name: "Boiler flow setpoint"
+      # The HA template computes 30-45 °C; the lower min leaves room for manual tests.
+      min_value: 25
+      max_value: 45
+      step: 0.5
+      initial_value: 30
+      restore_value: true
+
+switch:
+  - platform: opentherm
+    ch_enable:
+      id: ot_ch_enable
+      name: "CH enable"
+      restore_mode: RESTORE_DEFAULT_OFF
+    # Domestic hot water: the boiler keeps its own control, we only enable it.
+    dhw_enable:
+      name: "DHW enable"
+      restore_mode: ALWAYS_ON
+
+# --- Measured values ---------------------------------------------------------
+# Not every boiler supports every OpenTherm data ID - unsupported ones log a warning and can be removed.
+
+sensor:
+  - platform: opentherm
+    t_boiler:
+      name: "Boiler flow temperature"
+    t_ret:
+      name: "Boiler return temperature"
+    t_dhw:
+      name: "DHW temperature"
+    rel_mod_level:
+      name: "Relative modulation level"
+    ch_pressure:
+      name: "CH water pressure"
+    oem_fault_code:
+      name: "OEM fault code"
+    # Boiler max capacity (OT ID 15, kW).
+    max_capacity:
+      name: "Boiler max capacity"
+    # dhw_flow_rate (OT ID 19) is omitted: many combi boilers only have a flow switch and always report 0.
+
+  # --- Floor NTCs (ADS1115 voltage -> resistance -> temperature) -------------
+  # Sampled every second; the median of 60 raw voltage samples is passed on (one value per minute; after a reboot
+  # only after the first full 60 samples - 'unknown' until then, never a single noisy sample). This removes the
+  # 50 Hz cable noise and occasional bad I2C reads. Then open circuit (> ${ntc_open_v} V) and short (< ${ntc_short_v} V)
+  # -> NAN ('unknown'), BEFORE conversion. Finally values outside 0-60 °C are NAN as well.
+  # (The median runs on the voltage on purpose: on the temperature an open circuit is already NAN and the median
+  # skips it, so a single bad read - e.g. code 0x3FFF = 25.8 °C - could get through on an unconnected input.)
+  # A 5-sample (5-minute) moving average smooths the remaining 0.3-0.7 °C jitter, which once was enough to trip
+  # a floor lockout with a single spike.
+  # Calibration: adjust "- offset: 0.0" against a reference thermometer, ideally after a long closed-loop period
+  # (slab in equilibrium). B constant / reference resistance: match your probes (here 10k, B 3950).
+
+  # Bedroom
+  - platform: ads1115
+    ads1115_id: ads_a
+    multiplexer: A3_GND
+    gain: 4.096
+    id: floor_v_bedroom
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_bedroom
+    id: floor_r_bedroom
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_a}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_bedroom
+    id: floor_bedroom
+    name: "Floor temperature bedroom"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  # Kids' room 1
+  - platform: ads1115
+    ads1115_id: ads_a
+    multiplexer: A2_GND
+    gain: 4.096
+    id: floor_v_kids_room_1
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_kids_room_1
+    id: floor_r_kids_room_1
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_a}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_kids_room_1
+    id: floor_kids_room_1
+    name: "Floor temperature kids room 1"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  # Kids' room 2
+  - platform: ads1115
+    ads1115_id: ads_a
+    multiplexer: A1_GND
+    gain: 4.096
+    id: floor_v_kids_room_2
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_kids_room_2
+    id: floor_r_kids_room_2
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_a}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_kids_room_2
+    id: floor_kids_room_2
+    name: "Floor temperature kids room 2"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  # Bathroom
+  - platform: ads1115
+    ads1115_id: ads_a
+    multiplexer: A0_GND
+    gain: 4.096
+    id: floor_v_bathroom
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_bathroom
+    id: floor_r_bathroom
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_a}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_bathroom
+    id: floor_bathroom
+    name: "Floor temperature bathroom"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  # Hallway
+  - platform: ads1115
+    ads1115_id: ads_b
+    multiplexer: A3_GND
+    gain: 4.096
+    id: floor_v_hallway
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_hallway
+    id: floor_r_hallway
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_b}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_hallway
+    id: floor_hallway
+    name: "Floor temperature hallway"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  # Living room
+  - platform: ads1115
+    ads1115_id: ads_b
+    multiplexer: A2_GND
+    gain: 4.096
+    id: floor_v_living_room
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_living_room
+    id: floor_r_living_room
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_b}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_living_room
+    id: floor_living_room
+    name: "Floor temperature living room"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  # Attic 1 (spare)
+  - platform: ads1115
+    ads1115_id: ads_b
+    multiplexer: A1_GND
+    gain: 4.096
+    id: floor_v_attic_1
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_attic_1
+    id: floor_r_attic_1
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_b}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_attic_1
+    id: floor_attic_1
+    name: "Floor temperature attic 1"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  # Attic 2 (spare)
+  - platform: ads1115
+    ads1115_id: ads_b
+    multiplexer: A0_GND
+    gain: 4.096
+    id: floor_v_attic_2
+    update_interval: 1s
+    internal: true
+    filters:
+      - median:
+          window_size: 60
+          send_every: 60
+          send_first_at: 60
+      - lambda: "return (x > ${ntc_open_v} || x < ${ntc_short_v}) ? NAN : x;"
+  - platform: resistance
+    sensor: floor_v_attic_2
+    id: floor_r_attic_2
+    configuration: DOWNSTREAM
+    resistor: ${ntc_ref_resistor}
+    reference_voltage: ${ntc_supply_voltage_b}
+    internal: true
+  - platform: ntc
+    sensor: floor_r_attic_2
+    id: floor_attic_2
+    name: "Floor temperature attic 2"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+    filters:
+      - offset: 0.0
+      - lambda: "return (x < 0.0 || x > 60.0) ? NAN : x;"
+      - sliding_window_moving_average:   # average of the last 5 one-minute values
+          window_size: 5
+          send_every: 1
+          send_first_at: 1
+
+  - platform: dallas_temp
+    name: "Cabinet temperature"
+    update_interval: 60s
+
+  - platform: wifi_signal
+    name: "WiFi signal"
+    update_interval: 60s
+
+  - platform: uptime
+    name: "Uptime"
+
+binary_sensor:
+  - platform: opentherm
+    flame_on:
+      name: "Flame"
+    ch_active:
+      name: "CH active"
+    dhw_active:
+      name: "DHW active"
+    fault_indication:
+      name: "Fault"
+
+  - platform: status
+    name: "Status"
+
+  - platform: template
+    name: "Floor overheat lockout"
+    device_class: problem
+    lambda: "return id(floor_lockout);"
+
+# --- DS18B20 cabinet sensor (included in the DIYLess kit) --------------------
+# On the Master Shield "T" is wired to D5 (ESP32 D1 Mini: GPIO18).
+# It sits next to the gateway, so it mostly shows the enclosure / electronics temperature.
+one_wire:
+  - platform: gpio
+    pin: GPIO18
+
+# --- Failsafe: low flow temperature while HA is down -------------------------
+# If HA has been unreachable for 10 minutes, the HA floor protection does not run either, so the gateway lowers
+# the flow setpoint to a safe value itself. CH demand is NOT switched off, so floor tempering keeps working.
+
+globals:
+  - id: api_offline_minutes
+    type: int
+    initial_value: "0"
+  - id: floor_lockout
+    type: bool
+    initial_value: "false"
+  - id: ch_before_lockout
+    type: bool
+    initial_value: "false"
+
+interval:
+  - interval: 60s
+    then:
+      - if:
+          condition:
+            api.connected:
+          then:
+            - lambda: "id(api_offline_minutes) = 0;"
+          else:
+            - lambda: "id(api_offline_minutes) += 1;"
+      - if:
+          condition:
+            lambda: "return id(api_offline_minutes) == 10;"
+          then:
+            - logger.log:
+                level: WARN
+                format: "HA unreachable for 10 minutes - flow failsafe: ${failsafe_flow_temp} °C"
+            - number.set:
+                id: ot_t_set
+                value: ${failsafe_flow_temp}
+
+# --- Local floor protection (last line of defence, independent of HA) --------
+# The gateway only reaches the boiler (the zone relays are Zigbee devices controlled through HA), so its lockout
+# stops heating for the WHOLE house. That is why it only engages when HA has been unreachable for at least
+# 2 minutes; while HA runs, the per-zone HA floor protection closes the affected zone. Every zone with a connected
+# probe must be covered by the Home Assistant floor protection too!
+# If HA is unreachable and any probe reaches its local limit, the gateway turns off CH demand. Release: every probe
+# 2 °C below its limit, OR HA reachable again; CH enable then returns to its state before the lockout.
+# A faulty / unconnected probe (NAN) is ignored. Remove this interval if you build the board without ADS1115s.
+
+  - id: floor_protection
+    interval: 60s
+    then:
+      - lambda: |-
+          const float t[8] = {
+            id(floor_bedroom).state, id(floor_kids_room_1).state, id(floor_kids_room_2).state,
+            id(floor_bathroom).state, id(floor_hallway).state, id(floor_living_room).state,
+            id(floor_attic_1).state, id(floor_attic_2).state};
+          // bedroom, kids' rooms: probe under laminate; bathroom, hallway, living room: tiles;
+          // attic (spare): the stricter laminate limit until known
+          const float limit[8] = {
+            ${floor_limit_under_laminate}, ${floor_limit_kids_room_1}, ${floor_limit_under_laminate},
+            ${floor_limit_tile}, ${floor_limit_tile}, ${floor_limit_tile},
+            ${floor_limit_laminate}, ${floor_limit_laminate}};
+          bool over = false, cooled = true;
+          for (int i = 0; i < 8; i++) {
+            if (std::isnan(t[i])) continue;
+            if (t[i] >= limit[i]) over = true;
+            if (t[i] > limit[i] - 2.0f) cooled = false;
+          }
+          const bool ha_offline = id(api_offline_minutes) >= 2;
+          if (!id(floor_lockout) && over && ha_offline) {
+            id(floor_lockout) = true;
+            id(ch_before_lockout) = id(ot_ch_enable).state;
+            ESP_LOGW("floor", "Floor overheat while HA is unreachable - CH demand locked out");
+          } else if (id(floor_lockout) && (cooled || !ha_offline)) {
+            id(floor_lockout) = false;
+            ESP_LOGW("floor", cooled ? "Floor cooled down - CH lockout released" : "HA reachable again - HA floor protection takes over");
+            if (id(ch_before_lockout)) id(ot_ch_enable).turn_on();
+          }
+          if (id(floor_lockout) && id(ot_ch_enable).state) id(ot_ch_enable).turn_off();

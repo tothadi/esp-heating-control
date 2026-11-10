@@ -1,0 +1,602 @@
+# Home Assistant dashboard for the ESP Heating Control v4 controller (storage-mode dashboard).
+# Install: Settings -> Dashboards -> Add dashboard -> open it -> pencil -> three-dot menu -> Raw configuration
+#          editor -> paste this file.
+# Every entity here belongs to the controller (ESPHome device "heating-controller"); the controller runs all the
+# control logic, this dashboard only shows it and changes its setpoints and settings.
+# Zones 1-6 are listed with the reference names. If you rename zones in the firmware (zoneN_name), replace the
+# entity IDs here; add zones 7-8 by copying a zone block.
+title: Heating
+views:
+  - title: Overview
+    path: overview
+    icon: mdi:radiator
+    type: sections
+    max_columns: 4
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Rooms
+            icon: mdi:home-thermometer
+          - type: vertical-stack
+            grid_options: { columns: 6 }
+            cards:
+              - type: thermostat
+                entity: climate.heating_controller_living_room
+                name: "Living room"
+              - type: glance
+                show_icon: false
+                entities:
+                  - entity: sensor.heating_controller_living_room_floor_temperature
+                    name: Floor
+                  - entity: sensor.heating_controller_living_room_floor_target
+                    name: Floor target
+                  - entity: binary_sensor.heating_controller_living_room_valve
+                    name: Valve
+              - type: tile
+                entity: sensor.heating_controller_living_room_state
+                name: State
+          - type: vertical-stack
+            grid_options: { columns: 6 }
+            cards:
+              - type: thermostat
+                entity: climate.heating_controller_hallway
+                name: "Hallway"
+              - type: glance
+                show_icon: false
+                entities:
+                  - entity: sensor.heating_controller_hallway_floor_temperature
+                    name: Floor
+                  - entity: sensor.heating_controller_hallway_floor_target
+                    name: Floor target
+                  - entity: binary_sensor.heating_controller_hallway_valve
+                    name: Valve
+              - type: tile
+                entity: sensor.heating_controller_hallway_state
+                name: State
+          - type: vertical-stack
+            grid_options: { columns: 6 }
+            cards:
+              - type: thermostat
+                entity: climate.heating_controller_bedroom
+                name: "Bedroom"
+              - type: glance
+                show_icon: false
+                entities:
+                  - entity: sensor.heating_controller_bedroom_floor_temperature
+                    name: Floor
+                  - entity: sensor.heating_controller_bedroom_floor_target
+                    name: Floor target
+                  - entity: binary_sensor.heating_controller_bedroom_valve
+                    name: Valve
+              - type: tile
+                entity: sensor.heating_controller_bedroom_state
+                name: State
+          - type: vertical-stack
+            grid_options: { columns: 6 }
+            cards:
+              - type: thermostat
+                entity: climate.heating_controller_kids_room_1
+                name: "Kids room 1"
+              - type: glance
+                show_icon: false
+                entities:
+                  - entity: sensor.heating_controller_kids_room_1_floor_temperature
+                    name: Floor
+                  - entity: sensor.heating_controller_kids_room_1_floor_target
+                    name: Floor target
+                  - entity: binary_sensor.heating_controller_kids_room_1_valve
+                    name: Valve
+              - type: tile
+                entity: sensor.heating_controller_kids_room_1_state
+                name: State
+          - type: vertical-stack
+            grid_options: { columns: 6 }
+            cards:
+              - type: thermostat
+                entity: climate.heating_controller_kids_room_2
+                name: "Kids room 2"
+              - type: glance
+                show_icon: false
+                entities:
+                  - entity: sensor.heating_controller_kids_room_2_floor_temperature
+                    name: Floor
+                  - entity: sensor.heating_controller_kids_room_2_floor_target
+                    name: Floor target
+                  - entity: binary_sensor.heating_controller_kids_room_2_valve
+                    name: Valve
+              - type: tile
+                entity: sensor.heating_controller_kids_room_2_state
+                name: State
+          - type: vertical-stack
+            grid_options: { columns: 6 }
+            cards:
+              - type: thermostat
+                entity: climate.heating_controller_bathroom
+                name: "Bathroom"
+              - type: glance
+                show_icon: false
+                entities:
+                  - entity: sensor.heating_controller_bathroom_floor_temperature
+                    name: Floor
+                  - entity: sensor.heating_controller_bathroom_floor_target
+                    name: Floor target
+                  - entity: binary_sensor.heating_controller_bathroom_valve
+                    name: Valve
+              - type: tile
+                entity: sensor.heating_controller_bathroom_state
+                name: State
+      - type: grid
+        cards:
+          - type: heading
+            heading: Boiler
+            icon: mdi:water-boiler
+          - type: tile
+            entity: select.heating_controller_heating_mode
+            name: Heating mode
+            features: [{ type: select-options }]
+            grid_options: { columns: 12 }
+          - type: tile
+            entity: sensor.heating_controller_outdoor_temperature
+            name: Outdoor
+          - type: tile
+            entity: sensor.heating_controller_calculated_flow_temperature
+            name: Calculated flow
+          - type: tile
+            entity: sensor.heating_controller_flow_setpoint
+            name: Flow setpoint
+          - type: tile
+            entity: sensor.heating_controller_boiler_flow_temperature
+            name: Flow
+          - type: tile
+            entity: sensor.heating_controller_boiler_return_temperature
+            name: Return
+          - type: tile
+            entity: sensor.heating_controller_boiler_modulation
+            name: Modulation
+          - type: tile
+            entity: binary_sensor.heating_controller_boiler_flame
+            name: Flame
+          - type: tile
+            entity: binary_sensor.heating_controller_boiler_heating_demand
+            name: Heating demand
+          - type: tile
+            entity: sensor.heating_controller_heating_water_pressure
+            name: Water pressure
+          - type: tile
+            entity: switch.heating_controller_hot_water
+            name: Hot water
+          - type: tile
+            entity: sensor.heating_controller_hot_water_temperature
+            name: Hot water temperature
+          - type: tile
+            entity: binary_sensor.heating_controller_evening_preheat
+            name: Evening preheat
+          - type: tile
+            entity: sensor.heating_controller_flow_sustained_deficit_boost
+            name: Sustained-deficit boost
+          - type: tile
+            entity: binary_sensor.heating_controller_pump_1
+            name: Pump 1
+          - type: tile
+            entity: binary_sensor.heating_controller_pump_2
+            name: Pump 2
+          - type: tile
+            entity: binary_sensor.heating_controller_boiler_fault
+            name: Boiler fault
+          - type: tile
+            entity: sensor.heating_controller_boiler_fault_code
+            name: Fault code
+      - type: grid
+        cards:
+          - type: heading
+            heading: Graphs (24 hours)
+            icon: mdi:chart-line
+          - type: history-graph
+            title: Rooms and outdoor
+            hours_to_show: 24
+            grid_options: { columns: 12 }
+            entities:
+              - entity: sensor.heating_controller_living_room_room_temperature
+                name: "Living room"
+              - entity: sensor.heating_controller_hallway_room_temperature
+                name: "Hallway"
+              - entity: sensor.heating_controller_bedroom_room_temperature
+                name: "Bedroom"
+              - entity: sensor.heating_controller_kids_room_1_room_temperature
+                name: "Kids room 1"
+              - entity: sensor.heating_controller_kids_room_2_room_temperature
+                name: "Kids room 2"
+              - entity: sensor.heating_controller_bathroom_room_temperature
+                name: "Bathroom"
+              - entity: sensor.heating_controller_outdoor_temperature
+                name: Outdoor
+          - type: history-graph
+            title: Floor
+            hours_to_show: 24
+            grid_options: { columns: 12 }
+            entities:
+              - entity: sensor.heating_controller_living_room_floor_temperature
+                name: "Living room"
+              - entity: sensor.heating_controller_hallway_floor_temperature
+                name: "Hallway"
+              - entity: sensor.heating_controller_bedroom_floor_temperature
+                name: "Bedroom"
+              - entity: sensor.heating_controller_kids_room_1_floor_temperature
+                name: "Kids room 1"
+              - entity: sensor.heating_controller_kids_room_2_floor_temperature
+                name: "Kids room 2"
+              - entity: sensor.heating_controller_bathroom_floor_temperature
+                name: "Bathroom"
+          - type: history-graph
+            title: Boiler
+            hours_to_show: 24
+            grid_options: { columns: 12 }
+            entities:
+              - entity: sensor.heating_controller_boiler_flow_temperature
+                name: Flow
+              - entity: sensor.heating_controller_boiler_return_temperature
+                name: Return
+              - entity: sensor.heating_controller_flow_setpoint
+                name: Flow setpoint
+              - entity: sensor.heating_controller_calculated_flow_temperature
+                name: Calculated flow
+              - entity: sensor.heating_controller_boiler_modulation
+                name: Modulation
+          - type: history-graph
+            title: Valves
+            hours_to_show: 24
+            grid_options: { columns: 12 }
+            entities:
+              - entity: binary_sensor.heating_controller_living_room_valve
+                name: "Living room"
+              - entity: binary_sensor.heating_controller_hallway_valve
+                name: "Hallway"
+              - entity: binary_sensor.heating_controller_bedroom_valve
+                name: "Bedroom"
+              - entity: binary_sensor.heating_controller_kids_room_1_valve
+                name: "Kids room 1"
+              - entity: binary_sensor.heating_controller_kids_room_2_valve
+                name: "Kids room 2"
+              - entity: binary_sensor.heating_controller_bathroom_valve
+                name: "Bathroom"
+
+  - title: Schedule
+    path: schedule
+    icon: mdi:calendar-clock
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Times
+            icon: mdi:clock-outline
+          - type: markdown
+            content: >-
+              **Night** runs from *night start* to *day start* for zones with night setback, the **evening boost**
+              from *boost start* to *boost end* for zones with boost, **comfort** otherwise. Day start is early
+              because the floor is slow: rooms reach comfort *by* the time you get up. A manual setpoint change
+              holds until the next schedule change. The schedule runs on the controller (RTC), also without Home
+              Assistant.
+            grid_options: { columns: 12 }
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: time.heating_controller_schedule_day_start
+                name: Day start
+              - entity: time.heating_controller_schedule_night_start
+                name: Night start
+              - entity: time.heating_controller_schedule_boost_start
+                name: Boost start
+              - entity: time.heating_controller_schedule_boost_end
+                name: Boost end
+              - entity: number.heating_controller_night_floor_target
+                name: Night floor target
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Living room"
+            icon: mdi:thermometer
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: number.heating_controller_living_room_comfort_temperature
+                name: Comfort
+              - entity: switch.heating_controller_living_room_night_setback
+                name: Night setback
+              - entity: number.heating_controller_living_room_night_temperature
+                name: Night
+              - entity: switch.heating_controller_living_room_evening_boost
+                name: Evening boost
+              - entity: number.heating_controller_living_room_boost_temperature
+                name: Boost
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Hallway"
+            icon: mdi:thermometer
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: number.heating_controller_hallway_comfort_temperature
+                name: Comfort
+              - entity: switch.heating_controller_hallway_night_setback
+                name: Night setback
+              - entity: number.heating_controller_hallway_night_temperature
+                name: Night
+              - entity: switch.heating_controller_hallway_evening_boost
+                name: Evening boost
+              - entity: number.heating_controller_hallway_boost_temperature
+                name: Boost
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Bedroom"
+            icon: mdi:thermometer
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: number.heating_controller_bedroom_comfort_temperature
+                name: Comfort
+              - entity: switch.heating_controller_bedroom_night_setback
+                name: Night setback
+              - entity: number.heating_controller_bedroom_night_temperature
+                name: Night
+              - entity: switch.heating_controller_bedroom_evening_boost
+                name: Evening boost
+              - entity: number.heating_controller_bedroom_boost_temperature
+                name: Boost
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Kids room 1"
+            icon: mdi:thermometer
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: number.heating_controller_kids_room_1_comfort_temperature
+                name: Comfort
+              - entity: switch.heating_controller_kids_room_1_night_setback
+                name: Night setback
+              - entity: number.heating_controller_kids_room_1_night_temperature
+                name: Night
+              - entity: switch.heating_controller_kids_room_1_evening_boost
+                name: Evening boost
+              - entity: number.heating_controller_kids_room_1_boost_temperature
+                name: Boost
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Kids room 2"
+            icon: mdi:thermometer
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: number.heating_controller_kids_room_2_comfort_temperature
+                name: Comfort
+              - entity: switch.heating_controller_kids_room_2_night_setback
+                name: Night setback
+              - entity: number.heating_controller_kids_room_2_night_temperature
+                name: Night
+              - entity: switch.heating_controller_kids_room_2_evening_boost
+                name: Evening boost
+              - entity: number.heating_controller_kids_room_2_boost_temperature
+                name: Boost
+      - type: grid
+        cards:
+          - type: heading
+            heading: "Bathroom"
+            icon: mdi:thermometer
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: number.heating_controller_bathroom_comfort_temperature
+                name: Comfort
+              - entity: switch.heating_controller_bathroom_night_setback
+                name: Night setback
+              - entity: number.heating_controller_bathroom_night_temperature
+                name: Night
+              - entity: switch.heating_controller_bathroom_evening_boost
+                name: Evening boost
+              - entity: number.heating_controller_bathroom_boost_temperature
+                name: Boost
+
+  - title: Settings
+    path: settings
+    icon: mdi:tune
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Zones
+            icon: mdi:floor-plan
+          - type: markdown
+            content: >-
+              **Demand source**: *Room sensor* = the controller's thermostat with the Home Assistant room
+              temperature (without Home Assistant only floor tempering remains); *Wired thermostat* = the TERM
+              input; *Floor only* = tempering only. **Floor type** sets the floor target offset; *No probe*
+              disables tempering and floor protection. The **floor limit** closes the zone (released 2 °C below).
+            grid_options: { columns: 12 }
+          - type: entities
+            title: "Living room"
+            show_header_toggle: false
+            grid_options: { columns: 6 }
+            entities:
+              - entity: select.heating_controller_living_room_demand_source
+                name: Demand source
+              - entity: binary_sensor.heating_controller_living_room_wired_thermostat
+                name: Wired thermostat
+              - entity: select.heating_controller_living_room_floor_type
+                name: Floor type
+              - entity: number.heating_controller_living_room_floor_limit
+                name: Floor limit
+              - entity: binary_sensor.heating_controller_living_room_floor_overheat
+                name: Floor overheat
+          - type: entities
+            title: "Hallway"
+            show_header_toggle: false
+            grid_options: { columns: 6 }
+            entities:
+              - entity: select.heating_controller_hallway_demand_source
+                name: Demand source
+              - entity: binary_sensor.heating_controller_hallway_wired_thermostat
+                name: Wired thermostat
+              - entity: select.heating_controller_hallway_floor_type
+                name: Floor type
+              - entity: number.heating_controller_hallway_floor_limit
+                name: Floor limit
+              - entity: binary_sensor.heating_controller_hallway_floor_overheat
+                name: Floor overheat
+          - type: entities
+            title: "Bedroom"
+            show_header_toggle: false
+            grid_options: { columns: 6 }
+            entities:
+              - entity: select.heating_controller_bedroom_demand_source
+                name: Demand source
+              - entity: binary_sensor.heating_controller_bedroom_wired_thermostat
+                name: Wired thermostat
+              - entity: select.heating_controller_bedroom_floor_type
+                name: Floor type
+              - entity: number.heating_controller_bedroom_floor_limit
+                name: Floor limit
+              - entity: binary_sensor.heating_controller_bedroom_floor_overheat
+                name: Floor overheat
+          - type: entities
+            title: "Kids room 1"
+            show_header_toggle: false
+            grid_options: { columns: 6 }
+            entities:
+              - entity: select.heating_controller_kids_room_1_demand_source
+                name: Demand source
+              - entity: binary_sensor.heating_controller_kids_room_1_wired_thermostat
+                name: Wired thermostat
+              - entity: select.heating_controller_kids_room_1_floor_type
+                name: Floor type
+              - entity: number.heating_controller_kids_room_1_floor_limit
+                name: Floor limit
+              - entity: binary_sensor.heating_controller_kids_room_1_floor_overheat
+                name: Floor overheat
+          - type: entities
+            title: "Kids room 2"
+            show_header_toggle: false
+            grid_options: { columns: 6 }
+            entities:
+              - entity: select.heating_controller_kids_room_2_demand_source
+                name: Demand source
+              - entity: binary_sensor.heating_controller_kids_room_2_wired_thermostat
+                name: Wired thermostat
+              - entity: select.heating_controller_kids_room_2_floor_type
+                name: Floor type
+              - entity: number.heating_controller_kids_room_2_floor_limit
+                name: Floor limit
+              - entity: binary_sensor.heating_controller_kids_room_2_floor_overheat
+                name: Floor overheat
+          - type: entities
+            title: "Bathroom"
+            show_header_toggle: false
+            grid_options: { columns: 6 }
+            entities:
+              - entity: select.heating_controller_bathroom_demand_source
+                name: Demand source
+              - entity: binary_sensor.heating_controller_bathroom_wired_thermostat
+                name: Wired thermostat
+              - entity: select.heating_controller_bathroom_floor_type
+                name: Floor type
+              - entity: number.heating_controller_bathroom_floor_limit
+                name: Floor limit
+              - entity: binary_sensor.heating_controller_bathroom_floor_overheat
+                name: Floor overheat
+      - type: grid
+        cards:
+          - type: heading
+            heading: Flow temperature
+            icon: mdi:chart-bell-curve
+          - type: markdown
+            content: >-
+              flow = reference + offset + slope × (reference − outdoor), clamped to curve min/max, plus the demand
+              boost (largest room deficit) and the sustained-deficit term, capped at the flow maximum. Outdoor
+              temperature: Home Assistant, else the boiler's outdoor sensor, else a fixed fallback.
+            grid_options: { columns: 12 }
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: select.heating_controller_flow_mode
+                name: Flow mode
+              - entity: number.heating_controller_manual_flow_setpoint
+                name: Manual flow setpoint
+              - entity: number.heating_controller_curve_reference_room_temperature
+                name: Reference room temperature
+              - entity: number.heating_controller_curve_slope
+                name: Slope
+              - entity: number.heating_controller_curve_offset
+                name: Offset
+              - entity: number.heating_controller_curve_minimum
+                name: Curve minimum
+              - entity: number.heating_controller_curve_maximum
+                name: Curve maximum
+              - entity: number.heating_controller_demand_boost_maximum
+                name: Demand boost maximum
+              - entity: number.heating_controller_flow_maximum
+                name: Flow maximum
+          - type: heading
+            heading: Floor and pumps
+            icon: mdi:pump
+          - type: entities
+            show_header_toggle: false
+            grid_options: { columns: 12 }
+            entities:
+              - entity: number.heating_controller_floor_offset_tiles
+                name: Floor offset tiles
+              - entity: number.heating_controller_floor_offset_laminate
+                name: Floor offset laminate
+              - entity: select.heating_controller_pump_1_mode
+                name: Pump 1 mode
+              - entity: select.heating_controller_pump_2_mode
+                name: Pump 2 mode
+              - entity: number.heating_controller_pump_overrun
+                name: Pump overrun
+
+  - title: System
+    path: system
+    icon: mdi:chip
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Controller
+            icon: mdi:chip
+          - type: tile
+            entity: binary_sensor.heating_controller_status
+            name: Connection
+          - type: tile
+            entity: sensor.heating_controller_wifi_signal
+            name: WiFi signal
+          - type: tile
+            entity: sensor.heating_controller_uptime
+            name: Uptime
+          - type: tile
+            entity: sensor.heating_controller_firmware
+            name: Firmware
+          - type: tile
+            entity: sensor.heating_controller_ip_address
+            name: IP address
+          - type: tile
+            entity: button.heating_controller_restart
+            name: Restart
+          - type: tile
+            entity: sensor.heating_controller_boiler_outdoor_temperature
+            name: Boiler outdoor sensor

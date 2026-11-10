@@ -1,0 +1,14 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+# KiCad
+*.kicad_prl
+*-backups/
+fp-info-cache
+*.dsn
+*.ses
+*.drc.json
+# ESPHome
+secrets.yaml
+.esphome/

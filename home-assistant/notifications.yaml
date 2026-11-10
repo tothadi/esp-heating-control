@@ -1,0 +1,35 @@
+# Optional Home Assistant automation: notifications from the controller.
+# The controller handles every fault itself (zone lockout, boiler control); this only tells you about it.
+# Install: paste into automations.yaml (or a package) and replace notify.notify with your notifier.
+
+- alias: "Heating controller - Notifications"
+  id: heating_controller_notifications
+  mode: queued
+  triggers:
+    - trigger: state
+      entity_id:
+        - binary_sensor.heating_controller_living_room_floor_overheat
+        - binary_sensor.heating_controller_hallway_floor_overheat
+        - binary_sensor.heating_controller_bedroom_floor_overheat
+        - binary_sensor.heating_controller_kids_room_1_floor_overheat
+        - binary_sensor.heating_controller_kids_room_2_floor_overheat
+        - binary_sensor.heating_controller_bathroom_floor_overheat
+        - binary_sensor.heating_controller_boiler_fault
+      from: "off"
+      to: "on"
+    - trigger: state
+      entity_id: binary_sensor.heating_controller_status
+      to: "off"
+      for: "00:10:00"
+  actions:
+    - action: notify.notify       # replace with your notifier
+      data:
+        title: "Heating: {{ trigger.to_state.name }}"
+        message: >-
+          {% if trigger.entity_id.endswith('_floor_overheat') %}
+            The floor reached its limit; the controller closed the zone until it cools down 2 °C.
+          {% elif trigger.entity_id.endswith('_boiler_fault') %}
+            The boiler reports a fault (code {{ states('sensor.heating_controller_boiler_fault_code') }}).
+          {% else %}
+            The controller has been unreachable for 10 minutes. It keeps heating on its own.
+          {% endif %}
