@@ -71,6 +71,16 @@ All designs, files and documentation in this repository are provided "as is", wi
 
 The device switches 230 V mains. Mains wiring must be done only by a qualified person and in line with local regulations. The authors accept no liability for any damage, injury or loss resulting from the use of these designs.
 
+## Next Steps
+
+The project is currently in active development. Key next steps include:
+- Completing the hardware design review and initial board fabrication.
+- Add web UI with the features specified in the [web UI plan](docs/web-ui-plan.md).
+- Implementing the firmware features as outlined in the [web UI plan](docs/web-ui-plan.md).
+- Testing the integration of the OpenTherm interface, Zigbee components, and the local control logic.
+- Expanding the documentation to cover setup, usage, and troubleshooting.
+- Gathering feedback from early adopters and contributors to refine both hardware and software.
+
 ## License
 
 * Hardware (KiCad files, Gerbers, enclosure models and drawings): [CERN-OHL-S-2.0](LICENSES/CERN-OHL-S-2.0.txt)
