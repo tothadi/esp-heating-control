@@ -43,6 +43,8 @@ substitutions:
   floor_limit_under_laminate: "36.0"  # HA 34 + 2
   # Kids' room 1 probe sits above a supply pipe and reads the pipe peak: HA 36 + 2.
   floor_limit_kids_room_1: "38.0"
+  # EN 1264 allows a 33 °C floor surface in bathrooms (29 °C in living areas): HA 33 + 2.
+  floor_limit_bathroom: "35.0"
 
 esphome:
   name: opentherm
@@ -563,11 +565,11 @@ interval:
             id(floor_bedroom).state, id(floor_kids_room_1).state, id(floor_kids_room_2).state,
             id(floor_bathroom).state, id(floor_hallway).state, id(floor_living_room).state,
             id(floor_attic_1).state, id(floor_attic_2).state};
-          // bedroom, kids' rooms: probe under laminate; bathroom, hallway, living room: tiles;
+          // bedroom, kids' rooms: probe under laminate; bathroom: own limit; hallway, living room: tiles;
           // attic (spare): the stricter laminate limit until known
           const float limit[8] = {
             ${floor_limit_under_laminate}, ${floor_limit_kids_room_1}, ${floor_limit_under_laminate},
-            ${floor_limit_tile}, ${floor_limit_tile}, ${floor_limit_tile},
+            ${floor_limit_bathroom}, ${floor_limit_tile}, ${floor_limit_tile},
             ${floor_limit_laminate}, ${floor_limit_laminate}};
           bool over = false, cooled = true;
           for (int i = 0; i < 8; i++) {
