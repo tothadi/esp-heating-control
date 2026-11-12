@@ -77,6 +77,8 @@ The project is currently in active development. Key next steps include:
 - Completing the hardware design review and initial board fabrication.
 - Add web UI with the features specified in the [web UI plan](docs/web-ui-plan.md).
 - Implementing the firmware features as outlined in the [web UI plan](docs/web-ui-plan.md).
+- Optional ceiling cooling for heat-pump systems, with humidity-based dew-point protection, as outlined in the
+  [cooling plan](docs/cooling-plan.md).
 - Testing the integration of the OpenTherm interface, Zigbee components, and the local control logic.
 - Expanding the documentation to cover setup, usage, and troubleshooting.
 - Gathering feedback from early adopters and contributors to refine both hardware and software.
